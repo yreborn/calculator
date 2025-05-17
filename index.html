@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>亲戚关系计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        .app {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .header p {
+            font-size: 14px;
+            color: #666;
+        }
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            color: #555;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .form-control:focus {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 2px rgba(74,144,226,0.2);
+            outline: none;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .btn:hover {
+            background-color: #3a80d2;
+        }
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+        .relation-path {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #666;
+        }
+        .result {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .result-title {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .result-text {
+            font-size: 24px;
+            font-weight: 600;
+            color: #4a90e2;
+        }
+        .relation-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .relation-btn {
+            padding: 8px 12px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .relation-btn:hover {
+            background-color: #e0e0e0;
+        }
+        .relation-chain {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+        }
+        .relation-item {
+            background-color: #4a90e2;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        .remove-btn {
+            margin-left: 5px;
+            width: 16px;
+            height: 16px;
+            background-color: rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .clear-btn {
+            background-color: transparent;
+            border: none;
+            color: #999;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 5px;
+            margin-left: auto;
+        }
+        .examples {
+            margin-top: 20px;
+        }
+        .example-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        .example-list {
+            list-style: none;
+        }
+        .example-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            color: #666;
+        }
+        .example-item:last-child {
+            border-bottom: none;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 480px) {
+            .app {
+                padding: 15px;
+            }
+            .header h1 {
+                font-size: 22px;
+            }
+            .result-text {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="header">
+            <h1>亲戚关系计算器</h1>
+            <p>快速计算复杂的亲戚关系称呼</p>
+        </div>
+        
+        <div class="card">
+            <div class="form-group">
+                <label class="form-label">选择亲戚关系链</label>
+                <div class="relation-buttons">
+                    <button class="relation-btn" onclick="addRelation('父亲')">父亲</button>
+                    <button class="relation-btn" onclick="addRelation('母亲')">母亲</button>
+                    <button class="relation-btn" onclick="addRelation('丈夫')">丈夫</button>
+                    <button class="relation-btn" onclick="addRelation('妻子')">妻子</button>
+                    <button class="relation-btn" onclick="addRelation('儿子')">儿子</button>
+                    <button class="relation-btn" onclick="addRelation('女儿')">女儿</button>
+                    <button class="relation-btn" onclick="addRelation('哥哥')">哥哥</button>
+                    <button class="relation-btn" onclick="addRelation('弟弟')">弟弟</button>
+                    <button class="relation-btn" onclick="addRelation('姐姐')">姐姐</button>
+                    <button class="relation-btn" onclick="addRelation('妹妹')">妹妹</button>
+                </div>
+                
+                <div class="relation-chain" id="relation-chain">
+                    <button class="clear-btn" onclick="clearRelations()">清空</button>
+                </div>
+            </div>
+            
+            <button class="btn btn-block" onclick="calculateRelationship()">计算关系</button>
+            
+            <div class="result" id="result" style="display: none;">
+                <div class="result-title">计算结果：</div>
+                <div class="result-text" id="result-text"></div>
+            </div>
+        </div>
+        
+        <div class="card examples">
+            <div class="example-title">常见关系示例：</div>
+            <ul class="example-list">
+                <li class="example-item">爸爸的爸爸 = 爷爷</li>
+                <li class="example-item">妈妈的妈妈 = 外婆</li>
+                <li class="example-item">爸爸的妈妈 = 奶奶</li>
+                <li class="example-item">爸爸的哥哥 = 伯父</li>
+                <li class="example-item">爸爸的弟弟 = 叔叔</li>
+                <li class="example-item">妈妈的兄弟 = 舅舅</li>
+                <li class="example-item">爸爸的姐妹 = 姑姑</li>
+                <li class="example-item">妈妈的姐妹 = 阿姨</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 亲戚关系数据库
+        const relationshipData = {
+            '父亲': {
+                '父亲': '爷爷',
+                '母亲': '奶奶',
+                '哥哥': '伯父',
+                '弟弟': '叔叔',
+                '姐姐': '姑姑',
+                '妹妹': '姑姑',
+                '儿子': '兄弟',
+                '女儿': '姐妹'
+            },
+            '母亲': {
+                '父亲': '外公',
+                '母亲': '外婆',
+                '哥哥': '舅舅',
+                '弟弟': '舅舅',
+                '姐姐': '阿姨',
+                '妹妹': '阿姨',
+                '儿子': '兄弟',
+                '女儿': '姐妹'
+            },
+            '丈夫': {
+                '父亲': '公公',
+                '母亲': '婆婆',
+                '哥哥': '大伯子',
+                '弟弟': '小叔子',
+                '姐姐': '大姑子',
+                '妹妹': '小姑子',
+                '儿子': '儿子',
+                '女儿': '女儿'
+            },
+            '妻子': {
+                '父亲': '岳父',
+                '母亲': '岳母',
+                '哥哥': '大舅子',
+                '弟弟': '小舅子',
+                '姐姐': '大姨子',
+                '妹妹': '小姨子',
+                '儿子': '儿子',
+                '女儿': '女儿'
+            },
+            '儿子': {
+                '儿子': '孙子',
+                '女儿': '孙女',
+                '妻子': '儿媳'
+            },
+            '女儿': {
+                '儿子': '外孙',
+                '女儿': '外孙女',
+                '丈夫': '女婿'
+            },
+            '哥哥': {
+                '儿子': '侄子',
+                '女儿': '侄女',
+                '妻子': '嫂子'
+            },
+            '弟弟': {
+                '儿子': '侄子',
+                '女儿': '侄女',
+                '妻子': '弟媳'
+            },
+            '姐姐': {
+                '儿子': '外甥',
+                '女儿': '外甥女',
+                '丈夫': '姐夫'
+            },
+            '妹妹': {
+                '儿子': '外甥',
+                '女儿': '外甥女',
+                '丈夫': '妹夫'
+            }
+        };
+        
+        // 当前关系链
+        let relationChain = [];
+        
+        // 添加关系
+        function addRelation(relation) {
+            relationChain.push(relation);
+            updateRelationChain();
+        }
+        
+        // 移除关系
+        function removeRelation(index) {
+            relationChain.splice(index, 1);
+            updateRelationChain();
+        }
+        
+        // 清空关系链
+        function clearRelations() {
+            relationChain = [];
+            updateRelationChain();
+            document.getElementById('result').style.display = 'none';
+        }
+        
+        // 更新关系链显示
+        function updateRelationChain() {
+            const container = document.getElementById('relation-chain');
+            
+            // 保留清空按钮
+            container.innerHTML = '<button class="clear-btn" onclick="clearRelations()">清空</button>';
+            
+            relationChain.forEach((relation, index) => {
+                const relationItem = document.createElement('div');
+                relationItem.className = 'relation-item';
+                relationItem.innerHTML = `
+                    ${relation}
+                    <span class="remove-btn" onclick="removeRelation(${index})">×</span>
+                `;
+                container.insertBefore(relationItem, container.firstChild);
+            });
+        }
+        
+        // 计算关系
+        function calculateRelationship() {
+            if (relationChain.length === 0) {
+                alert('请先添加亲戚关系链');
+                return;
+            }
+            
+            let result = '';
+            
+            // 简单情况：只有一个关系
+            if (relationChain.length === 1) {
+                result = relationChain[0];
+            }
+            // 复杂情况：多个关系
+            else {
+                result = calculateComplexRelationship();
+            }
+            
+            // 显示结果
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('result-text').textContent = result || '未知关系';
+        }
+        
+        // 计算复杂关系
+        function calculateComplexRelationship() {
+            let currentRelation = '自己';
+            
+            for (let i = 0; i < relationChain.length; i++) {
+                const nextRelation = relationChain[i];
+                
+                if (currentRelation === '自己') {
+                    currentRelation = nextRelation;
+                    continue;
+                }
+                
+                // 查找关系数据库
+                if (relationshipData[currentRelation] && relationshipData[currentRelation][nextRelation]) {
+                    currentRelation = relationshipData[currentRelation][nextRelation];
+                } else {
+                    // 如果找不到确切关系，尝试用"的"连接
+                    currentRelation = currentRelation + '的' + nextRelation;
+                }
+            }
+            
+            return currentRelation;
+        }
+    </script>
+</body>
+</html>
